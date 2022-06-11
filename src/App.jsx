@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
 import abi from "./utils/WavePortal.json";
 
@@ -40,40 +40,6 @@ export default function App() {
       console.log(error);
     }
   };
-
-  useEffect(() => {
-    let wavePortalContract;
-
-    const onNewWave = (from, timestamp, message) => {
-      console.log("NewWave", from, timestamp, message);
-      setAllWaves((prevState) => [
-        ...prevState,
-        {
-          address: from,
-          timestamp: new Date(timestamp * 1000),
-          message,
-        },
-      ]);
-    };
-
-    if (window.ethereum) {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const signer = provider.getSigner();
-
-      wavePortalContract = new ethers.Contract(
-        contractAddress,
-        contractABI,
-        signer
-      );
-      wavePortalContract.on("NewWave", onNewWave);
-    }
-
-    return () => {
-      if (wavePortalContract) {
-        wavePortalContract.off("NewWave", onNewWave);
-      }
-    };
-  });
 
   const checkIfWalletIsConnected = async () => {
     try {
@@ -118,6 +84,34 @@ export default function App() {
   useEffect(() => {
     checkIfWalletIsConnected();
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    let wavePortalContract;
+
+    const onNewWave = (from, timestamp, message) => {
+      console.log("NewWave", from, timestamp, message);
+      setAllWaves((prevState) => [
+        ...prevState,
+        {
+          address: from,
+          timestamp: new Date(timestamp * 1000),
+          message: message,
+        },
+      ]);
+    };
+
+    if (window.ethereum) {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+
+      wavePortalContract = new ethers.Contract(
+        contractAddress,
+        contractABI,
+        signer
+      );
+      wavePortalContract.on("NewWave", onNewWave);
+    }
+  });
 
   const wave = async () => {
     try {
